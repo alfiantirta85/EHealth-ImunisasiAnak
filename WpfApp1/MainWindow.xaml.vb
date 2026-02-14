@@ -159,14 +159,6 @@ Class MainWindow
 
     Private Sub BtnUpdate_Click(sender As Object, e As RoutedEventArgs) Handles btnUpdate.Click
         Try
-            Dim i As Integer = 0
-            Do
-                Dim jenisImunisasi As String = CType(cmbJenisImunisasi.SelectedItem, ComboBoxItem).Content.ToString()
-                If (daftarJadwal(i).NamaAnak.Equals(txtNamaAnak.Text) And daftarJadwal(i).JenisImunisasi.Equals(jenisImunisasi)) Then
-                    Throw New Exception("Jenis imunisasi telah dijadwalkan")
-                End If
-            Loop While (True)
-
             If String.IsNullOrWhiteSpace(txtNamaAnak.Text) Then
                 Throw New Exception("Nama anak harus diisi!")
             End If
@@ -183,20 +175,30 @@ Class MainWindow
                 Throw New Exception("Jadwal imunisasi harus dipilih!")
             End If
 
-            Dim jadwal = daftarJadwal.FirstOrDefault(Function(j) j.Id = editingId)
+            Dim jenisImunisasi As String = CType(cmbJenisImunisasi.SelectedItem, ComboBoxItem).Content.ToString()
+            Dim namaAnak As String = txtNamaAnak.Text.Trim()
 
-            If jadwal IsNot Nothing Then
-                jadwal.NamaAnak = txtNamaAnak.Text.Trim()
+            For Each jadwal In daftarJadwal
+                ' Skip jika ini adalah data yang sedang diedit
+                If jadwal.Id <> editingId Then
+                    If jadwal.NamaAnak.Equals(namaAnak) And jadwal.JenisImunisasi.Equals(jenisImunisasi) Then
+                        Throw New Exception("Jenis imunisasi telah dijadwalkan")
+                    End If
+                End If
+            Next
 
-                jadwal.TanggalLahir = dtpTanggalLahir.SelectedDate.Value.ToString("dd/MM/yyyy")
+            Dim jadwalEdit = daftarJadwal.FirstOrDefault(Function(j) j.Id = editingId)
 
-                jadwal.JenisImunisasi = CType(cmbJenisImunisasi.SelectedItem, ComboBoxItem).Content.ToString()
-                jadwal.JadwalImunisasi = dtpJadwalImunisasi.SelectedDate.Value.ToString("dd/MM/yyyy")
+            If jadwalEdit IsNot Nothing Then
+                jadwalEdit.NamaAnak = namaAnak
+                jadwalEdit.TanggalLahir = dtpTanggalLahir.SelectedDate.Value.ToString("dd/MM/yyyy")
+                jadwalEdit.JenisImunisasi = jenisImunisasi
+                jadwalEdit.JadwalImunisasi = dtpJadwalImunisasi.SelectedDate.Value.ToString("dd/MM/yyyy")
 
                 If rbTerjadwal.IsChecked = True Then
-                    jadwal.Status = "Terjadwal"
+                    jadwalEdit.Status = "Terjadwal"
                 Else
-                    jadwal.Status = "Selesai"
+                    jadwalEdit.Status = "Selesai"
                 End If
 
                 lvJadwal.Items.Refresh()
@@ -289,15 +291,35 @@ Class MainWindow
     End Sub
 
     Private Sub BtnHapusSemua_Click(sender As Object, e As RoutedEventArgs) Handles btnHapusSemua.Click
-        Dim i As Integer = 0
-        While (True)
-            daftarJadwal.RemoveAt(i)
-            If (daftarJadwal.Count = 0) Then
-                Exit While
+        Try
+            If daftarJadwal.Count = 0 Then
+                MessageBox.Show("Tidak ada data untuk dihapus!", "Informasi",
+                          MessageBoxButton.OK, MessageBoxImage.Information)
+                Return
             End If
-            i += 1
-        End While
-        MessageBox.Show("Data berhasil dihapus.", "Data dihapus", MessageBoxButton.OK, MessageBoxImage.Information)
+
+            Dim result = MessageBox.Show(
+            $"Apakah Anda yakin ingin menghapus SEMUA data ({daftarJadwal.Count} jadwal)?",
+            "Konfirmasi Hapus Semua",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Warning)
+
+            If result = MessageBoxResult.Yes Then
+                daftarJadwal.Clear()
+                UpdateJumlahData()
+
+                If isEditMode Then
+                    KeluarEditMode()
+                End If
+
+                MessageBox.Show("Semua data berhasil dihapus!", "Sukses",
+                          MessageBoxButton.OK, MessageBoxImage.Information)
+            End If
+
+        Catch ex As Exception
+            MessageBox.Show("Error menghapus data: " & ex.Message, "Error",
+                      MessageBoxButton.OK, MessageBoxImage.Error)
+        End Try
     End Sub
 
     Private Sub SaveFile(dataArray As Array)
