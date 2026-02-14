@@ -282,42 +282,59 @@ Class MainWindow
         End If
     End Sub
 
+    Private Sub SaveFile()
+        Dim dirPath As String = Environment.GetFolderPath(Environment.SpecialFolder.Personal) & "\imunisasi"
+
+        Dim fileName As String = dirPath & "\JadwalImunisasi_" & DateTime.Now.ToString("yyyyMMdd_HHmmss") & ".txt"
+        FileOpen(1, fileName, OpenMode.Output)
+        PrintLine(1, "===== E-HEALTH: JADWAL IMUNISASI ANAK =====")
+        PrintLine(1, "Tanggal Export: " & DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"))
+        PrintLine(1, "Jumlah Record: " & daftarJadwal.Count.ToString())
+        PrintLine(1, New String("="c, 50))
+        PrintLine(1)
+        For i As Integer = 0 To daftarJadwal.Count - 1
+            PrintLine(1, "Record #" & (i + 1).ToString())
+            PrintLine(1, "Nama Anak        : " & daftarJadwal(i).NamaAnak)
+            PrintLine(1, "Tanggal Lahir    : " & daftarJadwal(i).TanggalLahir)
+            PrintLine(1, "Jenis Imunisasi  : " & daftarJadwal(i).JenisImunisasi)
+            PrintLine(1, "Jadwal           : " & daftarJadwal(i).JadwalImunisasi)
+            PrintLine(1, "Status           : " & daftarJadwal(i).Status)
+        Next
+        PrintLine(1)
+        PrintLine(1, "===== AKHIR DOKUMEN =====")
+        FileClose(1)
+
+        MessageBox.Show("Data berhasil disimpan ke: " & vbCrLf & fileName,
+                          "Sukses", MessageBoxButton.OK, MessageBoxImage.Information)
+    End Sub
+
     Private Sub BtnSimpanFile_Click(sender As Object, e As RoutedEventArgs) Handles btnSimpanFile.Click
         Try
             If daftarJadwal.Count = 0 Then
                 Throw New Exception("Tidak ada data untuk disimpan!")
             End If
 
-            Dim saveDialog As New SaveFileDialog()
-            saveDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal)
-            saveDialog.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
-            saveDialog.DefaultExt = "txt"
+            Dim pathDir As String = Environment.GetFolderPath(Environment.SpecialFolder.Personal) & "\imunisasi"
+            Directory.CreateDirectory(pathDir)
+            If (Directory.GetFiles(pathDir).Length > 0) Then
+                Dim latestFile As String = Directory.GetFiles(pathDir).OrderByDescending(Function(f) New FileInfo(f).LastWriteTime).FirstOrDefault().ToString()
+                Dim fileDate As Date = FileDateTime(latestFile)
+                Dim result = MessageBox.Show(
+                    $"File terakhir disimpan pada: {fileDate}" & vbCrLf &
+                    $"Apakah anda ingin menyimpan lagi?" & vbCrLf &
+                    "Konfirmasi simpan",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Question)
 
-            saveDialog.FileName = "JadwalImunisasi_" & DateTime.Now.ToString("yyyyMMdd_HHmmss") & ".txt"
-
-            If saveDialog.ShowDialog() = True Then
-                FileOpen(1, saveDialog.FileName, OpenMode.Output)
-                PrintLine(1, "===== E-HEALTH: JADWAL IMUNISASI ANAK =====")
-                PrintLine(1, "Tanggal Export: " & DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"))
-                PrintLine(1, "Jumlah Record: " & daftarJadwal.Count.ToString())
-                PrintLine(1, New String("="c, 50))
-                PrintLine(1)
-                For i As Integer = 0 To daftarJadwal.Count - 1
-                    PrintLine(1, "Record #" & (i + 1).ToString())
-                    PrintLine(1, "Nama Anak        : " & daftarJadwal(i).NamaAnak)
-                    PrintLine(1, "Tanggal Lahir    : " & daftarJadwal(i).TanggalLahir)
-                    PrintLine(1, "Jenis Imunisasi  : " & daftarJadwal(i).JenisImunisasi)
-                    PrintLine(1, "Jadwal           : " & daftarJadwal(i).JadwalImunisasi)
-                    PrintLine(1, "Status           : " & daftarJadwal(i).Status)
-                Next
-                PrintLine(1)
-                PrintLine(1, "===== AKHIR DOKUMEN =====")
-                FileClose(1)
-
-                MessageBox.Show("Data berhasil disimpan ke: " & vbCrLf & saveDialog.FileName,
-                              "Sukses", MessageBoxButton.OK, MessageBoxImage.Information)
+                Select Case result
+                    Case MessageBoxResult.Yes
+                        SaveFile()
+                    Case MessageBoxResult.No
+                        Exit Sub
+                End Select
+            Else
+                SaveFile()
             End If
-
         Catch ex As Exception
             MessageBox.Show("Gagal menyimpan file: " & ex.Message, "Error",
                           MessageBoxButton.OK, MessageBoxImage.Error)
