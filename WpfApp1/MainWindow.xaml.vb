@@ -1,23 +1,26 @@
 ﻿Imports System.Collections.ObjectModel
+Imports System.Diagnostics.Metrics
 Imports System.IO
 Imports Microsoft.Win32
 
 Public Class JadwalImunisasi
     Public Property Id As String
     Public Property NamaAnak As String
-    Public Property TanggalLahir As Date
+    Public Property TanggalLahir As String
     Public Property JenisImunisasi As String
-    Public Property JadwalImunisasi As Date
+    Public Property JadwalImunisasi As String
     Public Property Status As String
 
     Public Sub New(ByVal id As String, ByVal nama As String, ByVal tglLahir As String,
                    ByVal jenis As String, ByVal jadwal As String, ByVal status As String)
-        Me.Id = id
-        Me.NamaAnak = nama
-        Me.TanggalLahir = tglLahir
-        Me.JenisImunisasi = jenis
-        Me.JadwalImunisasi = jadwal
-        Me.Status = status
+        With Me
+            .Id = id
+            .NamaAnak = nama
+            .TanggalLahir = tglLahir
+            .JenisImunisasi = jenis
+            .JadwalImunisasi = jadwal
+            .Status = status
+        End With
     End Sub
 End Class
 
@@ -27,15 +30,13 @@ Class MainWindow
     Private isEditMode As Boolean = False
     Private editingId As String = ""
 
-    Public Sub New()
+    Public Sub MainWindow_Loaded() Handles Me.Loaded
         InitializeComponent()
-
         lvJadwal.ItemsSource = daftarJadwal
 
-        dpTanggalLahir.SelectedDate = DateTime.Now
-        dpJadwalImunisasi.SelectedDate = DateTime.Now.AddDays(7)
-
-        AddHandler lvJadwal.MouseDoubleClick, AddressOf lvJadwal_MouseDoubleClick
+        dtpTanggalLahir.SelectedDate = Nothing
+        dtpTanggalLahir.DisplayDateEnd = Date.Today
+        dtpJadwalImunisasi.SelectedDate = Nothing
 
         UpdateJumlahData()
     End Sub
@@ -44,7 +45,7 @@ Class MainWindow
         txtJumlahData.Text = $"Total: {daftarJadwal.Count} jadwal"
     End Sub
 
-    Private Sub lvJadwal_MouseDoubleClick(sender As Object, e As MouseButtonEventArgs)
+    Private Sub lvJadwal_MouseDoubleClick(sender As Object, e As MouseButtonEventArgs) Handles lvJadwal.MouseDoubleClick
         If lvJadwal.SelectedItem IsNot Nothing Then
             Dim selectedJadwal = CType(lvJadwal.SelectedItem, JadwalImunisasi)
             MulaiEditMode(selectedJadwal)
@@ -60,7 +61,7 @@ Class MainWindow
 
         Dim tglLahir As DateTime
         If DateTime.TryParse(jadwal.TanggalLahir, tglLahir) Then
-            dpTanggalLahir.SelectedDate = tglLahir
+            dtpTanggalLahir.SelectedDate = tglLahir
         End If
 
         For Each item As ComboBoxItem In cmbJenisImunisasi.Items
@@ -72,7 +73,7 @@ Class MainWindow
 
         Dim tglJadwal As DateTime
         If DateTime.TryParse(jadwal.JadwalImunisasi, tglJadwal) Then
-            dpJadwalImunisasi.SelectedDate = tglJadwal
+            dtpJadwalImunisasi.SelectedDate = tglJadwal
         End If
 
         If jadwal.Status = "Terjadwal" Then
@@ -103,7 +104,7 @@ Class MainWindow
         BersihkanForm()
     End Sub
 
-    Private Sub btnEdit_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub BtnEdit_Click(sender As Object, e As RoutedEventArgs)
         Dim button = CType(sender, Button)
         Dim id = button.Tag.ToString()
 
@@ -113,7 +114,7 @@ Class MainWindow
         End If
     End Sub
 
-    Private Sub btnHapus_Click(sender As Object, e As RoutedEventArgs)
+    Private Sub BtnHapus_Click(sender As Object, e As RoutedEventArgs)
         Try
             Dim button = CType(sender, Button)
             Dim id = button.Tag.ToString()
@@ -128,18 +129,23 @@ Class MainWindow
                     "Konfirmasi Hapus",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question)
+                Select Case result
+                    Case MessageBoxResult.Yes
+                        daftarJadwal.Remove(jadwal)
 
+                        UpdateJumlahData()
+
+                        If isEditMode AndAlso editingId = id Then
+                            KeluarEditMode()
+                        End If
+
+                        MessageBox.Show("Jadwal berhasil dihapus!", "Sukses",
+                                      MessageBoxButton.OK, MessageBoxImage.Information)
+                    Case MessageBoxResult.No
+                        Exit Sub
+                End Select
                 If result = MessageBoxResult.Yes Then
-                    daftarJadwal.Remove(jadwal)
 
-                    UpdateJumlahData()
-
-                    If isEditMode AndAlso editingId = id Then
-                        KeluarEditMode()
-                    End If
-
-                    MessageBox.Show("Jadwal berhasil dihapus!", "Sukses",
-                                  MessageBoxButton.OK, MessageBoxImage.Information)
                 End If
             End If
 
@@ -149,17 +155,17 @@ Class MainWindow
         End Try
     End Sub
 
-    Private Sub btnBatal_Click(sender As Object, e As RoutedEventArgs) Handles btnBatal.Click
+    Private Sub BtnBatal_Click(sender As Object, e As RoutedEventArgs) Handles btnBatal.Click
         KeluarEditMode()
     End Sub
 
-    Private Sub btnUpdate_Click(sender As Object, e As RoutedEventArgs) Handles btnUpdate.Click
+    Private Sub BtnUpdate_Click(sender As Object, e As RoutedEventArgs) Handles btnUpdate.Click
         Try
             If String.IsNullOrWhiteSpace(txtNamaAnak.Text) Then
                 Throw New Exception("Nama anak harus diisi!")
             End If
 
-            If Not dpTanggalLahir.SelectedDate.HasValue Then
+            If Not dtpTanggalLahir.SelectedDate.HasValue Then
                 Throw New Exception("Tanggal lahir harus dipilih!")
             End If
 
@@ -167,7 +173,7 @@ Class MainWindow
                 Throw New Exception("Jenis imunisasi harus dipilih!")
             End If
 
-            If Not dpJadwalImunisasi.SelectedDate.HasValue Then
+            If Not dtpJadwalImunisasi.SelectedDate.HasValue Then
                 Throw New Exception("Jadwal imunisasi harus dipilih!")
             End If
 
@@ -176,10 +182,10 @@ Class MainWindow
             If jadwal IsNot Nothing Then
                 jadwal.NamaAnak = txtNamaAnak.Text.Trim()
 
-                jadwal.TanggalLahir = dpTanggalLahir.SelectedDate.Value.ToString("dd/MM/yyyy")
+                jadwal.TanggalLahir = dtpTanggalLahir.SelectedDate.Value.ToString("dd/MM/yyyy")
 
                 jadwal.JenisImunisasi = CType(cmbJenisImunisasi.SelectedItem, ComboBoxItem).Content.ToString()
-                jadwal.JadwalImunisasi = dpJadwalImunisasi.SelectedDate.Value.ToString("dd/MM/yyyy")
+                jadwal.JadwalImunisasi = dtpJadwalImunisasi.SelectedDate.Value.ToString("dd/MM/yyyy")
 
                 If rbTerjadwal.IsChecked = True Then
                     jadwal.Status = "Terjadwal"
@@ -203,13 +209,13 @@ Class MainWindow
         End Try
     End Sub
 
-    Private Sub btnTambah_Click(sender As Object, e As RoutedEventArgs) Handles btnTambah.Click
+    Private Sub BtnTambah_Click(sender As Object, e As RoutedEventArgs) Handles btnTambah.Click
         Try
             If String.IsNullOrWhiteSpace(txtNamaAnak.Text) Then
                 Throw New Exception("Nama anak harus diisi!")
             End If
 
-            If Not dpTanggalLahir.SelectedDate.HasValue Then
+            If Not dtpTanggalLahir.SelectedDate.HasValue Then
                 Throw New Exception("Tanggal lahir harus dipilih!")
             End If
 
@@ -217,7 +223,7 @@ Class MainWindow
                 Throw New Exception("Jenis imunisasi harus dipilih!")
             End If
 
-            If Not dpJadwalImunisasi.SelectedDate.HasValue Then
+            If Not dtpJadwalImunisasi.SelectedDate.HasValue Then
                 Throw New Exception("Jadwal imunisasi harus dipilih!")
             End If
 
@@ -225,10 +231,10 @@ Class MainWindow
 
             Dim namaAnak As String = txtNamaAnak.Text.Trim()
 
-            Dim tglLahir As String = dpTanggalLahir.SelectedDate.Value.ToString("dd/MM/yyyy")
+            Dim tglLahir As String = dtpTanggalLahir.SelectedDate.Value.ToString("dd/MM/yyyy")
 
             Dim jenisImunisasi As String = CType(cmbJenisImunisasi.SelectedItem, ComboBoxItem).Content.ToString()
-            Dim jadwal As String = dpJadwalImunisasi.SelectedDate.Value.ToString("dd/MM/yyyy")
+            Dim jadwal As String = dtpJadwalImunisasi.SelectedDate.Value.ToString("dd/MM/yyyy")
 
             Dim status As String
             If rbTerjadwal.IsChecked = True Then
@@ -257,17 +263,18 @@ Class MainWindow
     Private Sub BersihkanForm()
         txtNamaAnak.Clear()
 
-        dpTanggalLahir.SelectedDate = DateTime.Now
+        dtpTanggalLahir.SelectedDate = Nothing
 
         cmbJenisImunisasi.SelectedItem = Nothing
+        cmbJenisImunisasi.SelectedIndex = -1
 
-        dpJadwalImunisasi.SelectedDate = DateTime.Now.AddDays(7)
+        dtpJadwalImunisasi.SelectedDate = Nothing
 
         rbTerjadwal.IsChecked = True
         txtIdJadwal.Clear()
     End Sub
 
-    Private Sub btnBersihkan_Click(sender As Object, e As RoutedEventArgs) Handles btnBersihkan.Click
+    Private Sub BtnBersihkan_Click(sender As Object, e As RoutedEventArgs) Handles btnBersihkan.Click
         If isEditMode Then
             KeluarEditMode()
         Else
@@ -275,44 +282,37 @@ Class MainWindow
         End If
     End Sub
 
-    Private Sub btnSimpanFile_Click(sender As Object, e As RoutedEventArgs) Handles btnSimpanFile.Click
+    Private Sub BtnSimpanFile_Click(sender As Object, e As RoutedEventArgs) Handles btnSimpanFile.Click
         Try
             If daftarJadwal.Count = 0 Then
                 Throw New Exception("Tidak ada data untuk disimpan!")
             End If
 
             Dim saveDialog As New SaveFileDialog()
+            saveDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Personal)
             saveDialog.Filter = "Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
             saveDialog.DefaultExt = "txt"
 
             saveDialog.FileName = "JadwalImunisasi_" & DateTime.Now.ToString("yyyyMMdd_HHmmss") & ".txt"
 
             If saveDialog.ShowDialog() = True Then
-                Using writer As New StreamWriter(saveDialog.FileName)
-                    writer.WriteLine("===== E-HEALTH: JADWAL IMUNISASI ANAK =====")
-
-                    writer.WriteLine("Tanggal Export: " & DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"))
-
-                    writer.WriteLine("Jumlah Record: " & daftarJadwal.Count.ToString())
-                    writer.WriteLine(New String("="c, 50))
-                    writer.WriteLine()
-
-                    Dim counter As Integer = 1
-                    For Each jadwal As JadwalImunisasi In daftarJadwal
-                        writer.WriteLine("Record #" & counter.ToString())
-                        writer.WriteLine("Nama Anak        : " & jadwal.NamaAnak)
-                        writer.WriteLine("Tanggal Lahir    : " & jadwal.TanggalLahir)
-                        writer.WriteLine("Jenis Imunisasi  : " & jadwal.JenisImunisasi)
-                        writer.WriteLine("Jadwal           : " & jadwal.JadwalImunisasi)
-                        writer.WriteLine("Status           : " & jadwal.Status)
-                        writer.WriteLine(New String("-"c, 50))
-
-                        counter += 1
-                    Next
-
-                    writer.WriteLine()
-                    writer.WriteLine("===== AKHIR DOKUMEN =====")
-                End Using
+                FileOpen(1, saveDialog.FileName, OpenMode.Output)
+                PrintLine(1, "===== E-HEALTH: JADWAL IMUNISASI ANAK =====")
+                PrintLine(1, "Tanggal Export: " & DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"))
+                PrintLine(1, "Jumlah Record: " & daftarJadwal.Count.ToString())
+                PrintLine(1, New String("="c, 50))
+                PrintLine(1)
+                For i As Integer = 0 To daftarJadwal.Count - 1
+                    PrintLine(1, "Record #" & (i + 1).ToString())
+                    PrintLine(1, "Nama Anak        : " & daftarJadwal(i).NamaAnak)
+                    PrintLine(1, "Tanggal Lahir    : " & daftarJadwal(i).TanggalLahir)
+                    PrintLine(1, "Jenis Imunisasi  : " & daftarJadwal(i).JenisImunisasi)
+                    PrintLine(1, "Jadwal           : " & daftarJadwal(i).JadwalImunisasi)
+                    PrintLine(1, "Status           : " & daftarJadwal(i).Status)
+                Next
+                PrintLine(1)
+                PrintLine(1, "===== AKHIR DOKUMEN =====")
+                FileClose(1)
 
                 MessageBox.Show("Data berhasil disimpan ke: " & vbCrLf & saveDialog.FileName,
                               "Sukses", MessageBoxButton.OK, MessageBoxImage.Information)
