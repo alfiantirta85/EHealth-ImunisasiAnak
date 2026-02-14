@@ -1,7 +1,5 @@
 ﻿Imports System.Collections.ObjectModel
-Imports System.Diagnostics.Metrics
 Imports System.IO
-Imports Microsoft.Win32
 
 Public Class JadwalImunisasi
     Public Property Id As String
@@ -161,6 +159,14 @@ Class MainWindow
 
     Private Sub BtnUpdate_Click(sender As Object, e As RoutedEventArgs) Handles btnUpdate.Click
         Try
+            Dim i As Integer = 0
+            Do
+                Dim jenisImunisasi As String = CType(cmbJenisImunisasi.SelectedItem, ComboBoxItem).Content.ToString()
+                If (daftarJadwal(i).NamaAnak = txtNamaAnak.Text AndAlso daftarJadwal(i).JenisImunisasi = jenisImunisasi) Then
+                    Throw New Exception("Jenis imunisasi telah dijadwalkan")
+                End If
+            Loop While (True)
+
             If String.IsNullOrWhiteSpace(txtNamaAnak.Text) Then
                 Throw New Exception("Nama anak harus diisi!")
             End If
@@ -321,7 +327,7 @@ Class MainWindow
                 Dim fileDate As Date = FileDateTime(latestFile)
                 Dim result = MessageBox.Show(
                     $"File terakhir disimpan pada: {fileDate}" & vbCrLf &
-                    $"Apakah anda ingin menyimpan lagi?" & vbCrLf &
+                    $"Apakah anda ingin menyimpan lagi?",
                     "Konfirmasi simpan",
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Question)
