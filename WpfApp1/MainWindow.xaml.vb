@@ -1,5 +1,6 @@
 ﻿Imports System.Collections.ObjectModel
 Imports System.IO
+Imports System.Windows.Controls.Primitives
 
 Public Class JadwalImunisasi
     Public Property Id As String
@@ -159,14 +160,6 @@ Class MainWindow
 
     Private Sub BtnUpdate_Click(sender As Object, e As RoutedEventArgs) Handles btnUpdate.Click
         Try
-            Dim i As Integer = 0
-            Do
-                Dim jenisImunisasi As String = CType(cmbJenisImunisasi.SelectedItem, ComboBoxItem).Content.ToString()
-                If (daftarJadwal(i).NamaAnak.Equals(txtNamaAnak.Text) And daftarJadwal(i).JenisImunisasi.Equals(jenisImunisasi)) Then
-                    Throw New Exception("Jenis imunisasi telah dijadwalkan")
-                End If
-            Loop While (True)
-
             If String.IsNullOrWhiteSpace(txtNamaAnak.Text) Then
                 Throw New Exception("Nama anak harus diisi!")
             End If
@@ -231,6 +224,20 @@ Class MainWindow
 
             If Not dtpJadwalImunisasi.SelectedDate.HasValue Then
                 Throw New Exception("Jadwal imunisasi harus dipilih!")
+            End If
+
+            If (daftarJadwal.Count > 0) Then
+                Dim i As Integer = 0
+                Do
+                    Dim compJenisImunisasi As String = CType(cmbJenisImunisasi.SelectedItem, ComboBoxItem).Content.ToString()
+                    Dim compTglLahir As String = dtpTanggalLahir.SelectedDate.Value.ToString("dd/MM/yyyy")
+
+                    If (daftarJadwal(i).NamaAnak.Equals(txtNamaAnak.Text) And daftarJadwal(i).JenisImunisasi.Equals(compJenisImunisasi) And daftarJadwal(i).TanggalLahir.Equals(compTglLahir) And daftarJadwal(i).Status.Equals("Terjadwal")) Then
+                        Throw New Exception("Jadwal imunisasi ini sudah ada")
+                    End If
+
+                    i += 1
+                Loop While (i < daftarJadwal.Count)
             End If
 
             Dim id As String = Guid.NewGuid().ToString()
