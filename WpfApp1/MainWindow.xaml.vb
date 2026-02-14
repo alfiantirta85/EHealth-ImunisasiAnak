@@ -313,18 +313,19 @@ Class MainWindow
             End If
 
             Dim result = MessageBox.Show(
-            $"Apakah Anda yakin ingin menghapus SEMUA data ({daftarJadwal.Count} jadwal)?",
-            "Konfirmasi Hapus Semua",
+            $"Apakah Anda yakin ingin menghapus semua data ({daftarJadwal.Count} jadwal)?",
+            "Konfirmasi hapus data",
             MessageBoxButton.YesNo,
             MessageBoxImage.Warning)
 
             If result = MessageBoxResult.Yes Then
-                daftarJadwal.Clear()
-                UpdateJumlahData()
-
                 If isEditMode Then
                     KeluarEditMode()
                 End If
+
+                While daftarJadwal.Count > 0
+                    daftarJadwal.RemoveAt(0)
+                End While
 
                 MessageBox.Show("Semua data berhasil dihapus!", "Sukses",
                           MessageBoxButton.OK, MessageBoxImage.Information)
@@ -336,7 +337,7 @@ Class MainWindow
         End Try
     End Sub
 
-    Private Sub SaveFile(dataArray As Array)
+    Private Sub SaveFile(ByRef dataArray As Array)
         Dim dirPath As String = Environment.GetFolderPath(Environment.SpecialFolder.Personal) & "\imunisasi"
 
         Dim fileName As String = dirPath & "\JadwalImunisasi_" & DateTime.Now.ToString("yyyyMMdd_HHmmss") & ".txt"
