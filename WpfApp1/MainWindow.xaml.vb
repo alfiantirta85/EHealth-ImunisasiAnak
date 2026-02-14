@@ -179,7 +179,6 @@ Class MainWindow
             Dim namaAnak As String = txtNamaAnak.Text.Trim()
 
             For Each jadwal In daftarJadwal
-                ' Skip jika ini adalah data yang sedang diedit
                 If jadwal.Id <> editingId Then
                     If jadwal.NamaAnak.Equals(namaAnak) And jadwal.JenisImunisasi.Equals(jenisImunisasi) Then
                         Throw New Exception("Jenis imunisasi telah dijadwalkan")
