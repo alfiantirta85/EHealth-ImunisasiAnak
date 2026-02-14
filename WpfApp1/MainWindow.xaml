@@ -85,6 +85,10 @@
                                Width="120" Padding="10" Margin="5" 
                                Background="#607D8B" Foreground="White" 
                                FontWeight="Bold" BorderThickness="0"/>
+                        <Button x:Name="btnHapusSemua" Content="Hapus Semua Data" 
+                               Width="143" Padding="10" Margin="5" 
+                               Background="DarkRed" Foreground="White" 
+                               FontWeight="Bold" BorderThickness="0"/>              
                     </StackPanel>
                 </StackPanel>
             </Border>
