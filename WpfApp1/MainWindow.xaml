@@ -5,7 +5,6 @@
         Title="E-Health: Jadwal Imunisasi Anak" Height="650" Width="1000"
         WindowStartupLocation="CenterScreen">
 
-    <!-- ScrollViewer untuk scroll seluruh konten -->
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <Grid Margin="20">
             <Grid.RowDefinitions>
@@ -14,7 +13,6 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Header -->
             <Border Grid.Row="0" Background="#2196F3" Padding="15" CornerRadius="5" Margin="0,0,0,20">
                 <StackPanel>
                     <TextBlock Text="E-HEALTH: SISTEM JADWAL IMUNISASI ANAK" 
@@ -26,25 +24,20 @@
                 </StackPanel>
             </Border>
 
-            <!-- Form Input -->
             <Border Grid.Row="1" BorderBrush="#CCCCCC" BorderThickness="1" 
                     Padding="20" CornerRadius="5" Background="#F5F5F5">
                 <StackPanel>
                     <TextBlock Text="DATA ANAK DAN JADWAL IMUNISASI" 
                               FontSize="16" FontWeight="Bold" Margin="0,0,0,15"/>
 
-                    <!-- ID Jadwal (Hidden - untuk edit) -->
                     <TextBox x:Name="txtIdJadwal" Visibility="Collapsed"/>
 
-                    <!-- Nama Anak -->
                     <TextBlock Text="Nama Anak:" Margin="0,0,0,5"/>
                     <TextBox x:Name="txtNamaAnak" Padding="8" Margin="0,0,0,10"/>
 
-                    <!-- Tanggal Lahir -->
                     <TextBlock Text="Tanggal Lahir:" Margin="0,0,0,5"/>
-                    <DatePicker x:Name="dpTanggalLahir" Padding="8" Margin="0,0,0,10"/>
+                    <DatePicker x:Name="dtpTanggalLahir" Padding="8" Margin="0,0,0,10"/>
 
-                    <!-- Jenis Imunisasi -->
                     <TextBlock Text="Jenis Imunisasi:" Margin="0,0,0,5"/>
                     <ComboBox x:Name="cmbJenisImunisasi" Padding="8" Margin="0,0,0,10">
                         <ComboBoxItem Content="BCG (0-2 bulan)"/>
@@ -54,11 +47,9 @@
                         <ComboBoxItem Content="Campak (9 bulan)"/>
                     </ComboBox>
 
-                    <!-- Jadwal Imunisasi -->
                     <TextBlock Text="Jadwal Imunisasi:" Margin="0,0,0,5"/>
-                    <DatePicker x:Name="dpJadwalImunisasi" Padding="8" Margin="0,0,0,10"/>
+                    <DatePicker x:Name="dtpJadwalImunisasi" Padding="8" Margin="0,0,0,10"/>
 
-                    <!-- Status -->
                     <TextBlock Text="Status:" Margin="0,0,0,5"/>
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
                         <RadioButton x:Name="rbTerjadwal" Content="Terjadwal" 
@@ -67,13 +58,11 @@
                                    GroupName="Status"/>
                     </StackPanel>
 
-                    <!-- Mode Indicator (Edit/Add) -->
                     <TextBlock x:Name="txtModeIndicator" Text="" FontSize="12" 
                               Foreground="#FF9800" FontWeight="Bold" 
                               Margin="0,0,0,10" Visibility="Collapsed"/>
 
-                    <!-- Tombol Aksi -->
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
                         <Button x:Name="btnTambah" Content="Tambah Jadwal" 
                                Width="120" Padding="10" Margin="5" 
                                Background="#4CAF50" Foreground="White" 
@@ -96,11 +85,14 @@
                                Width="120" Padding="10" Margin="5" 
                                Background="#607D8B" Foreground="White" 
                                FontWeight="Bold" BorderThickness="0"/>
+                        <Button x:Name="btnHapusSemua" Content="Hapus Semua Data" 
+                               Width="143" Padding="10" Margin="5" 
+                               Background="DarkRed" Foreground="White" 
+                               FontWeight="Bold" BorderThickness="0"/>              
                     </StackPanel>
                 </StackPanel>
             </Border>
 
-            <!-- Daftar Jadwal dengan ScrollViewer -->
             <Border Grid.Row="2" BorderBrush="#CCCCCC" BorderThickness="1" 
                     Padding="20" CornerRadius="5" Margin="0,20,0,0">
                 <StackPanel>
@@ -113,12 +105,10 @@
                                   HorizontalAlignment="Right" Margin="0,5,0,15"/>
                     </Grid>
 
-                    <!-- ScrollViewer untuk ListView -->
                     <ScrollViewer VerticalScrollBarVisibility="Auto" Height="280">
                         <ListView x:Name="lvJadwal">
                             <ListView.View>
                                 <GridView>
-                                    <!-- Nama Anak - Left Align -->
                                     <GridViewColumn Header="Nama Anak" Width="150">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
@@ -128,7 +118,6 @@
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
 
-                                    <!-- Tanggal Lahir - Center -->
                                     <GridViewColumn Header="Tanggal Lahir" Width="120">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
@@ -138,7 +127,6 @@
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
 
-                                    <!-- Jenis Imunisasi - Center -->
                                     <GridViewColumn Header="Jenis Imunisasi" Width="160">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
@@ -148,7 +136,6 @@
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
 
-                                    <!-- Jadwal - Center -->
                                     <GridViewColumn Header="Jadwal" Width="120">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
@@ -158,7 +145,6 @@
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
 
-                                    <!-- Status - Center -->
                                     <GridViewColumn Header="Status" Width="100">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
@@ -168,7 +154,6 @@
                                         </GridViewColumn.CellTemplate>
                                     </GridViewColumn>
 
-                                    <!-- Aksi - Center -->
                                     <GridViewColumn Header="Aksi" Width="170">
                                         <GridViewColumn.CellTemplate>
                                             <DataTemplate>
@@ -178,12 +163,12 @@
                                                            Margin="2" Background="#2196F3" 
                                                            Foreground="White" BorderThickness="0"
                                                            Tag="{Binding Id}"
-                                                           Click="btnEdit_Click"/>
+                                                           Click="BtnEdit_Click"/>
                                                     <Button Content="Hapus" Width="70" Padding="5,2" 
                                                            Margin="2" Background="#F44336" 
                                                            Foreground="White" BorderThickness="0"
                                                            Tag="{Binding Id}"
-                                                           Click="btnHapus_Click"/>
+                                                           Click="BtnHapus_Click"/>
                                                 </StackPanel>
                                             </DataTemplate>
                                         </GridViewColumn.CellTemplate>
@@ -192,11 +177,6 @@
                             </ListView.View>
                         </ListView>
                     </ScrollViewer>
-
-                    <!-- Tips -->
-                    <TextBlock Text="💡 Tips: Double-click pada baris untuk edit cepat, atau gunakan tombol Edit/Hapus" 
-                              FontSize="11" Foreground="#666666" Margin="0,10,0,0" 
-                              FontStyle="Italic"/>
                 </StackPanel>
             </Border>
         </Grid>
